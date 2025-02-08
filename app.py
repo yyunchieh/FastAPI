@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import openai
+from pydantic improt BaseModel
 
 app = FastAPI()
 
@@ -28,35 +29,50 @@ def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
     
     return credentials
 
-# Testing
-@app.get("/")
-def read_root():
-    return {"message": "FastAPI is working!"}
-
 
 #@app.get("/predict/health")
 #async def health_check():
  #   return {"status": "ok"}
 
+@app.post("/predict/setup")
+async def setup():
+    return {"status": "Model setup successful"}
+
 
 @app.get("/predict/health")
-async def health_check(credentials: HTTPBasicCredentials = Depends(authenticate)):
+async def health_check():
     return {"status":"ok"}
-       
-@app.post("/predict")
-async def predict(request: Request, credentials: HTTPBasicCredentials = Depends(authenticate)):
-    data = await request.json()
-    text = data.get("text", "")
+
+class TextRequest(BaseModel):
+    data: dict
+
+@app.post("/predict/predict")
+async def predict(request: TextRequest):
+    text = request.data.get("text", "")
 
     if not text:
-        raise HTTPException(status_code=400, detail="Missing 'text' field in request body")
-
-    response = openai.chat.completions.create(
+        raise HTTPException(status_code=400, detail="No text provided")
+       
+    response = openai.ChatCompletion.create(
         model="gpt-4-turbo",
-        messages=[{"role": "user", "content": f"please classify the following texts into person, date, organization, location: {text}"}],
-        max_tokens=100
+        messages=[{"role": "user", "content": f"Please classfy the following text as Person, Date, Organization, Location: {text}"}],
     )
 
-    result = response.choices[0].message.content.strip()
-    return {"predictions": [{"label": result}]}
+    label = response["choices"][0]["message"]["content"].strip()
 
+
+    return [{
+
+        "result": [
+                {
+                    "value": {
+                        "text": text,
+                        "labels": [label]},
+                    "from_name": "label",
+                    "to_name": "text",
+                    "type": "labels"
+                }
+            ]
+        }]
+    
+    
