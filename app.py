@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import openai
-from pydantic improt BaseModel
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -34,14 +34,22 @@ def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
 #async def health_check():
  #   return {"status": "ok"}
 
-@app.post("/predict/setup")
-async def setup():
-    return {"status": "Model setup successful"}
+#@app.get("/health")
+#async def health_check():
+ #   return {"status": "ok"}
 
+@app.get("/health")
+async def root_health():
+    return {"status": "ok"}
 
 @app.get("/predict/health")
 async def health_check():
-    return {"status":"ok"}
+    return {"status": "ok"}
+
+@app.post("/predict/setup")
+async def setup():
+    return {"status": "ok"}
+
 
 class TextRequest(BaseModel):
     data: dict
