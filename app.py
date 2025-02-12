@@ -30,14 +30,6 @@ def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
     return credentials
 
 
-#@app.get("/predict/health")
-#async def health_check():
- #   return {"status": "ok"}
-
-#@app.get("/health")
-#async def health_check():
- #   return {"status": "ok"}
-
 @app.get("/health")
 async def root_health():
     return {"status": "ok"}
@@ -54,7 +46,7 @@ async def setup():
 class TextRequest(BaseModel):
     data: dict
 
-@app.post("/predict/predict")
+@app.post("/predict")
 async def predict(request: TextRequest):
     text = request.data.get("text", "")
 
